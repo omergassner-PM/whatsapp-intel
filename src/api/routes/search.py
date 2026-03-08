@@ -5,7 +5,7 @@ Search routes — full-text search across processed content.
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, or_
+from sqlalchemy import String, func, or_
 from sqlalchemy.orm import Session
 
 from src.api.auth import get_current_user
@@ -55,7 +55,7 @@ def search(
                 Article.title.ilike(pattern),
                 Article.clean_text.ilike(pattern),
                 ProcessedItem.tldr.ilike(pattern),
-                func.cast(ProcessedItem.key_facts, func.text()).ilike(pattern),
+                func.cast(ProcessedItem.key_facts, String).ilike(pattern),
             ),
         )
         .order_by(ProcessedItem.relevance_score.desc().nullslast())
