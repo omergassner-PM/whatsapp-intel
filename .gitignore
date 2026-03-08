@@ -18,6 +18,7 @@ src/webapp/dist/
 # Exports (contain private WhatsApp data)
 exports/*.zip
 exports/*.txt
+exports/*/
 media/
 
 # Database
