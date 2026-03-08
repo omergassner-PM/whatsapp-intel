@@ -34,6 +34,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
       LLM_MODEL: ${LLM_MODEL:-claude-sonnet-4-20250514}
       SCRAPE_TIMEOUT: ${SCRAPE_TIMEOUT:-30}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
     volumes:
       - ./exports:/app/exports
       - ./media:/app/media
@@ -44,12 +45,12 @@ services:
     build:
       context: ./src/webapp
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000/api/v1
     container_name: whatsapp-intel-webapp
     restart: unless-stopped
     depends_on:
       - api
-    environment:
-      VITE_API_URL: http://api:8000/api/v1
     ports:
       - "3000:3000"
 
