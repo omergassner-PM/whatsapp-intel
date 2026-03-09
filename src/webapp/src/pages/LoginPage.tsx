@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../api";
+import { login, devLogin } from "../api";
 import { setAuth } from "../auth";
 
 export default function LoginPage() {
@@ -25,13 +25,27 @@ export default function LoginPage() {
     }
   };
 
+  const handleDevLogin = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      const { data } = await devLogin();
+      setAuth(data.access_token, data.user);
+      navigate("/");
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Dev login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
       <div className="w-full max-w-sm">
         <div className="bg-white rounded-lg shadow-xl p-8">
           <div className="mb-6 text-center">
-            <h1 className="text-xl font-bold text-gray-900">Intel Platform</h1>
-            <p className="text-sm text-gray-500 mt-1">AeroDan Ltd</p>
+            <h1 className="text-xl font-bold text-gray-900">AeroData</h1>
+            <p className="text-sm text-gray-500 mt-1">AeroDan Ltd — Intelligence Platform</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -72,6 +86,19 @@ export default function LoginPage() {
               {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
+
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <button
+              onClick={handleDevLogin}
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-500 disabled:opacity-50"
+            >
+              {loading ? "Signing in..." : "Quick Login (Dev)"}
+            </button>
+            <p className="text-xs text-gray-400 text-center mt-2">
+              Auto-login as admin — for testing only
+            </p>
+          </div>
         </div>
       </div>
     </div>

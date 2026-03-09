@@ -1,9 +1,13 @@
 """
-FastAPI application entry point for the WhatsApp Intelligence Platform.
+FastAPI application entry point for the AeroData Intelligence Platform.
 """
 
 import logging
 import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,8 +22,8 @@ logging.basicConfig(
 )
 
 app = FastAPI(
-    title="WhatsApp Intelligence Platform",
-    description="Internal intelligence tool for AeroDan Ltd",
+    title="AeroData",
+    description="AeroDan Ltd — Intelligence Platform",
     version="1.0.0",
 )
 

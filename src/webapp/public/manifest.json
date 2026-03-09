@@ -1,7 +1,7 @@
 {
-  "name": "WhatsApp Intelligence Platform",
-  "short_name": "Intel Platform",
-  "description": "Internal intelligence tool for AeroDan Ltd — WhatsApp group chat analysis",
+  "name": "AeroData — Intelligence Platform",
+  "short_name": "AeroData",
+  "description": "AeroDan Ltd — Intelligence Platform for WhatsApp group chat analysis",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#111827",

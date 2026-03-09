@@ -54,7 +54,7 @@ export default function Layout() {
       >
         <div className="px-5 py-5 border-b border-gray-800 flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-bold tracking-tight">Intel Platform</h1>
+            <h1 className="text-lg font-bold tracking-tight">AeroData</h1>
             <p className="text-xs text-gray-400 mt-0.5">AeroDan Ltd</p>
           </div>
           <button
@@ -119,7 +119,7 @@ export default function Layout() {
           >
             <Menu size={22} />
           </button>
-          <h1 className="text-sm font-bold text-gray-900">Intel Platform</h1>
+          <h1 className="text-sm font-bold text-gray-900">AeroData</h1>
         </header>
 
         <main className="flex-1 overflow-auto">
