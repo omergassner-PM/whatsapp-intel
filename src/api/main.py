@@ -49,9 +49,15 @@ app.include_router(notes.router, prefix=prefix)
 app.include_router(admin.router, prefix=prefix)
 
 
+logger = logging.getLogger(__name__)
+
+
 @app.on_event("startup")
 def on_startup() -> None:
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        logger.warning("Could not create tables on startup (DB may not be ready): %s", e)
 
 
 @app.get("/health")
