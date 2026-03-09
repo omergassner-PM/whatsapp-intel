@@ -56,6 +56,19 @@ export const uploadExport = (file: File) => {
   return api.post("/upload", form);
 };
 
+// --- Notes ---
+export const getArticleNotes = (articleId: string) =>
+  api.get(`/articles/${articleId}/notes`);
+
+export const createArticleNote = (articleId: string, content: string) =>
+  api.post(`/articles/${articleId}/notes`, { content });
+
+export const updateArticleNote = (noteId: string, content: string) =>
+  api.put(`/articles/notes/${noteId}`, { content });
+
+export const deleteArticleNote = (noteId: string) =>
+  api.delete(`/articles/notes/${noteId}`);
+
 // --- Admin ---
 export const getUsers = () => api.get("/admin/users");
 export const createUser = (data: {

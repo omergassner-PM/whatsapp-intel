@@ -138,6 +138,33 @@ class User(Base):
     )
 
 
+class ArticleNote(Base):
+    """User notes attached to articles."""
+
+    __tablename__ = "article_notes"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    article_id = Column(
+        UUID(as_uuid=True), ForeignKey("articles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id = Column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    content = Column(Text, nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+    # Relationships
+    article = relationship("Article", backref="notes")
+    user = relationship("User", backref="notes")
+
+
 class IngestionLog(Base):
     """Audit trail for export ingestion runs."""
 

@@ -1,6 +1,16 @@
 import { useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { uploadExport } from "../api";
-import { Upload, CheckCircle, AlertCircle, FileArchive } from "lucide-react";
+import {
+  Upload,
+  CheckCircle,
+  AlertCircle,
+  FileArchive,
+  ArrowRight,
+  MessageSquare,
+  Globe,
+  Brain,
+} from "lucide-react";
 
 export default function UploadPage() {
   const [dragging, setDragging] = useState(false);
@@ -49,6 +59,28 @@ export default function UploadPage() {
         scrape shared URLs, and process articles through the intelligence pipeline.
       </p>
 
+      {/* How it works */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Step
+          icon={<MessageSquare size={20} className="text-blue-500" />}
+          step="1"
+          title="Parse Messages"
+          desc="Extract messages, senders, and URLs from the WhatsApp export"
+        />
+        <Step
+          icon={<Globe size={20} className="text-green-500" />}
+          step="2"
+          title="Scrape Articles"
+          desc="Fetch and extract article content from all shared links"
+        />
+        <Step
+          icon={<Brain size={20} className="text-purple-500" />}
+          step="3"
+          title="AI Processing"
+          desc="Generate TLDRs, extract key facts, people, technologies, and tags"
+        />
+      </div>
+
       {/* Drop zone */}
       <div
         onDragOver={(e) => {
@@ -64,9 +96,14 @@ export default function UploadPage() {
         }`}
       >
         {uploading ? (
-          <div className="space-y-2">
-            <div className="animate-spin mx-auto w-8 h-8 border-2 border-gray-300 border-t-gray-800 rounded-full" />
-            <p className="text-sm text-gray-600">Processing export...</p>
+          <div className="space-y-3">
+            <div className="animate-spin mx-auto w-10 h-10 border-2 border-gray-300 border-t-gray-800 rounded-full" />
+            <p className="text-sm font-medium text-gray-700">
+              Processing export...
+            </p>
+            <p className="text-xs text-gray-500">
+              Parsing messages, scraping URLs, and running AI analysis. This may take a few minutes.
+            </p>
           </div>
         ) : (
           <>
@@ -99,35 +136,62 @@ export default function UploadPage() {
 
       {/* Result */}
       {result && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-5">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-5 space-y-4">
+          <div className="flex items-center gap-2">
             <CheckCircle size={18} className="text-green-600" />
             <h3 className="font-semibold text-green-800">Upload Successful</h3>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-            <div>
-              <p className="text-gray-500">Messages Found</p>
-              <p className="text-lg font-bold">{result.messages_found}</p>
-            </div>
-            <div>
-              <p className="text-gray-500">New Messages</p>
-              <p className="text-lg font-bold">{result.new_messages}</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Duplicates Skipped</p>
-              <p className="text-lg font-bold">{result.skipped_duplicates}</p>
-            </div>
-            <div>
-              <p className="text-gray-500">URLs Found</p>
-              <p className="text-lg font-bold">{result.urls_found}</p>
-            </div>
+            <Stat label="Messages Found" value={result.messages_found} />
+            <Stat label="New Messages" value={result.new_messages} />
+            <Stat label="Duplicates Skipped" value={result.skipped_duplicates} />
+            <Stat label="URLs Found" value={result.urls_found} />
           </div>
-          <p className="text-xs text-green-700 mt-3">
-            Scraping and LLM processing are running in the background. Articles will appear
-            on the dashboard as they are processed.
-          </p>
+          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-green-200">
+            <p className="text-xs text-green-700">
+              Scraping and AI processing run in the background. Articles will appear as they finish.
+            </p>
+            <Link
+              to="/articles"
+              className="inline-flex items-center gap-1 text-xs font-medium text-green-800 bg-green-200 px-3 py-1 rounded hover:bg-green-300"
+            >
+              View Articles <ArrowRight size={12} />
+            </Link>
+          </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function Step({
+  icon,
+  step,
+  title,
+  desc,
+}: {
+  icon: React.ReactNode;
+  step: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <div className="bg-white rounded-lg border p-4">
+      <div className="flex items-center gap-2 mb-2">
+        {icon}
+        <span className="text-xs font-bold text-gray-400">STEP {step}</span>
+      </div>
+      <p className="text-sm font-medium text-gray-900">{title}</p>
+      <p className="text-xs text-gray-500 mt-1">{desc}</p>
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div>
+      <p className="text-gray-500">{label}</p>
+      <p className="text-lg font-bold">{value}</p>
     </div>
   );
 }

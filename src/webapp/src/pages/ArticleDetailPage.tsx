@@ -1,14 +1,71 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { getArticle } from "../api";
-import { ArrowLeft, ExternalLink, Clock, User } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getArticle,
+  getArticleNotes,
+  createArticleNote,
+  updateArticleNote,
+  deleteArticleNote,
+} from "../api";
+import { getStoredUser } from "../auth";
+import {
+  ArrowLeft,
+  ExternalLink,
+  Clock,
+  User,
+  StickyNote,
+  Send,
+  Pencil,
+  Trash2,
+  X,
+  Check,
+} from "lucide-react";
+import { format } from "date-fns";
 
 export default function ArticleDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
+  const currentUser = getStoredUser();
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["article", id],
     queryFn: () => getArticle(id!),
     enabled: !!id,
+  });
+
+  const notesQ = useQuery({
+    queryKey: ["notes", id],
+    queryFn: () => getArticleNotes(id!),
+    enabled: !!id,
+  });
+
+  const [noteText, setNoteText] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+
+  const addNote = useMutation({
+    mutationFn: () => createArticleNote(id!, noteText),
+    onSuccess: () => {
+      setNoteText("");
+      queryClient.invalidateQueries({ queryKey: ["notes", id] });
+    },
+  });
+
+  const editNote = useMutation({
+    mutationFn: () => updateArticleNote(editingId!, editText),
+    onSuccess: () => {
+      setEditingId(null);
+      setEditText("");
+      queryClient.invalidateQueries({ queryKey: ["notes", id] });
+    },
+  });
+
+  const removeNote = useMutation({
+    mutationFn: (noteId: string) => deleteArticleNote(noteId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes", id] });
+    },
   });
 
   if (isLoading) return <p className="text-sm text-gray-500">Loading...</p>;
@@ -17,9 +74,14 @@ export default function ArticleDetailPage() {
   const a = data?.data;
   if (!a) return <p className="text-sm text-gray-500">Article not found.</p>;
 
+  const notes = notesQ.data?.data || [];
+
   return (
     <div className="space-y-6">
-      <Link to="/articles" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
+      <Link
+        to="/articles"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+      >
         <ArrowLeft size={16} /> Back to articles
       </Link>
 
@@ -47,9 +109,12 @@ export default function ArticleDetailPage() {
             Source <ExternalLink size={14} />
           </a>
         </div>
-        <div className="flex items-center gap-2 mt-3">
+        <div className="flex items-center gap-2 mt-3 flex-wrap">
           {a.tags?.map((t: string) => (
-            <span key={t} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+            <span
+              key={t}
+              className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+            >
               {t}
             </span>
           ))}
@@ -108,7 +173,10 @@ export default function ArticleDetailPage() {
         <Section title="Technologies">
           <div className="flex flex-wrap gap-2">
             {a.technologies.map((t: any, i: number) => (
-              <span key={i} className="text-sm bg-purple-50 text-purple-700 px-3 py-1 rounded">
+              <span
+                key={i}
+                className="text-sm bg-purple-50 text-purple-700 px-3 py-1 rounded"
+              >
                 {typeof t === "string" ? t : t.name || JSON.stringify(t)}
               </span>
             ))}
@@ -141,6 +209,122 @@ export default function ArticleDetailPage() {
         </Section>
       )}
 
+      {/* Notes */}
+      <div className="bg-white rounded-lg border p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <StickyNote size={18} className="text-amber-500" />
+          <h3 className="font-semibold text-sm text-gray-900">
+            Notes ({notes.length})
+          </h3>
+        </div>
+
+        {/* Add note form */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (noteText.trim()) addNote.mutate();
+          }}
+          className="flex gap-2 mb-4"
+        >
+          <textarea
+            value={noteText}
+            onChange={(e) => setNoteText(e.target.value)}
+            placeholder="Add a note about this article..."
+            rows={2}
+            className="flex-1 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-800 resize-none"
+          />
+          <button
+            type="submit"
+            disabled={!noteText.trim() || addNote.isPending}
+            className="self-end bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 disabled:opacity-50 flex items-center gap-1"
+          >
+            <Send size={14} />
+            Add
+          </button>
+        </form>
+
+        {/* Notes list */}
+        <div className="space-y-3">
+          {notes.length === 0 && (
+            <p className="text-sm text-gray-400 italic">No notes yet. Be the first to add one.</p>
+          )}
+          {notes.map((note: any) => (
+            <div
+              key={note.id}
+              className="bg-amber-50 border border-amber-100 rounded-lg p-3"
+            >
+              {editingId === note.id ? (
+                <div className="space-y-2">
+                  <textarea
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    rows={3}
+                    className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-800 resize-none"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => editNote.mutate()}
+                      disabled={!editText.trim() || editNote.isPending}
+                      className="text-xs bg-gray-900 text-white px-3 py-1 rounded flex items-center gap-1 hover:bg-gray-800 disabled:opacity-50"
+                    >
+                      <Check size={12} /> Save
+                    </button>
+                    <button
+                      onClick={() => setEditingId(null)}
+                      className="text-xs bg-gray-200 text-gray-700 px-3 py-1 rounded flex items-center gap-1 hover:bg-gray-300"
+                    >
+                      <X size={12} /> Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-800 whitespace-pre-wrap">
+                    {note.content}
+                  </p>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs text-gray-500">
+                      {note.username} &middot;{" "}
+                      {note.created_at
+                        ? format(new Date(note.created_at), "MMM d, yyyy HH:mm")
+                        : ""}
+                      {note.updated_at &&
+                        note.updated_at !== note.created_at &&
+                        " (edited)"}
+                    </span>
+                    {(note.user_id === currentUser?.id ||
+                      currentUser?.role === "admin") && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingId(note.id);
+                            setEditText(note.content);
+                          }}
+                          className="text-gray-400 hover:text-gray-600"
+                          title="Edit"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm("Delete this note?"))
+                              removeNote.mutate(note.id);
+                          }}
+                          className="text-gray-400 hover:text-red-500"
+                          title="Delete"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Full article text */}
       {a.clean_text && (
         <Section title="Full Article">
@@ -153,7 +337,13 @@ export default function ArticleDetailPage() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="bg-white rounded-lg border p-5">
       <h3 className="font-semibold text-sm text-gray-900 mb-3">{title}</h3>

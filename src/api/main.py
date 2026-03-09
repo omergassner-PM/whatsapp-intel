@@ -8,7 +8,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.routes import admin, articles, auth, search, tags, upload, weekly
+from src.api.routes import admin, articles, auth, notes, search, tags, upload, weekly
 from src.database.models import Base
 from src.api.database import engine
 
@@ -41,6 +41,7 @@ app.include_router(weekly.router, prefix=prefix)
 app.include_router(search.router, prefix=prefix)
 app.include_router(tags.router, prefix=prefix)
 app.include_router(upload.router, prefix=prefix)
+app.include_router(notes.router, prefix=prefix)
 app.include_router(admin.router, prefix=prefix)
 
 

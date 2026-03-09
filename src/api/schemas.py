@@ -169,6 +169,28 @@ class AdminUserOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# --- Notes ---
+
+class NoteOut(BaseModel):
+    id: UUID
+    article_id: UUID
+    user_id: UUID
+    username: str | None = None
+    content: str
+    created_at: datetime | None
+    updated_at: datetime | None
+
+    model_config = {"from_attributes": True}
+
+
+class CreateNoteRequest(BaseModel):
+    content: str = Field(min_length=1, max_length=10000)
+
+
+class UpdateNoteRequest(BaseModel):
+    content: str = Field(min_length=1, max_length=10000)
+
+
 class IngestionLogOut(BaseModel):
     id: UUID
     export_filename: str
