@@ -9,8 +9,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from src.api.routes import admin, articles, auth, notes, search, tags, upload, weekly
 from src.database.models import Base
@@ -52,12 +53,44 @@ app.include_router(admin.router, prefix=prefix)
 logger = logging.getLogger(__name__)
 
 
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    logger.error("Unhandled error: %s", exc, exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"},
+    )
+
+
+def _apply_schema_migrations() -> None:
+    """Apply any pending schema changes that create_all won't handle."""
+    from sqlalchemy import inspect, text
+
+    with engine.connect() as conn:
+        inspector = inspect(engine)
+
+        # Check if users table exists and needs updates
+        if "users" in inspector.get_table_names():
+            columns = {col["name"] for col in inspector.get_columns("users")}
+
+            if "email" not in columns:
+                logger.info("Adding 'email' column to users table")
+                conn.execute(text("ALTER TABLE users ADD COLUMN email VARCHAR(255)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_users_email ON users (email)"))
+
+            # Make password_hash nullable (for viewer self-registration)
+            conn.execute(text("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL"))
+
+        conn.commit()
+
+
 @app.on_event("startup")
 def on_startup() -> None:
     try:
         Base.metadata.create_all(bind=engine)
+        _apply_schema_migrations()
     except Exception as e:
-        logger.warning("Could not create tables on startup (DB may not be ready): %s", e)
+        logger.warning("Could not create/migrate tables on startup: %s", e)
 
 
 @app.get("/health")
