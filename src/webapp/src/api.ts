@@ -79,4 +79,12 @@ export const createUser = (data: {
   display_name?: string;
   role?: string;
 }) => api.post("/admin/users", data);
-export const getLogs = () => api.get("/admin/logs");
+export const getLogs = (params?: Record<string, string | number>) =>
+  api.get("/admin/logs", { params });
+export const deleteLog = (id: string) => api.delete(`/admin/logs/${id}`);
+export const getActivity = (params?: Record<string, string | number>) =>
+  api.get("/admin/activity", { params });
+
+// --- Download ---
+export const downloadCSV = () =>
+  api.get("/admin/export/csv", { responseType: "blob" });

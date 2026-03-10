@@ -16,11 +16,17 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class ViewerRegisterRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=255)
+    email: str = Field(min_length=3, max_length=255)
+
+
 class UserOut(BaseModel):
     id: UUID
     username: str
     display_name: str | None
     role: str
+    email: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -206,3 +212,30 @@ class IngestionLogOut(BaseModel):
     completed_at: datetime | None
 
     model_config = {"from_attributes": True}
+
+
+# --- User Activity ---
+
+class UserActivityOut(BaseModel):
+    id: UUID
+    user_id: UUID
+    username: str | None = None
+    action: str
+    detail: str | None
+    created_at: datetime | None
+
+    model_config = {"from_attributes": True}
+
+
+class PaginatedActivity(BaseModel):
+    items: list[UserActivityOut]
+    total: int
+    page: int
+    pages: int
+
+
+class PaginatedLogs(BaseModel):
+    items: list[IngestionLogOut]
+    total: int
+    page: int
+    pages: int

@@ -1,10 +1,33 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { getDigests, getArticles, getTags } from "../api";
+import api from "../api";
 import { format } from "date-fns";
-import { FileText, Tag, TrendingUp, Calendar } from "lucide-react";
+import { FileText, Tag, TrendingUp, Calendar, Download } from "lucide-react";
 
 export default function DashboardPage() {
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const { data } = await api.get("/admin/export/csv", { responseType: "blob" });
+      const url = window.URL.createObjectURL(new Blob([data]));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "aerodata_articles_export.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      alert("Download failed");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   const digestsQ = useQuery({
     queryKey: ["digests", { page: 1, limit: 1 }],
     queryFn: () => getDigests({ page: 1, limit: 1 }),
@@ -67,6 +90,16 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Download report */}
+      <button
+        onClick={handleDownload}
+        disabled={downloading}
+        className="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+      >
+        <Download size={16} />
+        {downloading ? "Downloading..." : "Download Report (CSV)"}
+      </button>
 
       {/* Weekly digest */}
       {latestDigest && (

@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from src.api.auth import get_current_user
 from src.api.database import get_db
 from src.api.schemas import SearchResponse, SearchResult
-from src.database.models import Article, ProcessedItem, User
+from src.database.models import Article, ProcessedItem, User, UserActivity
 
 router = APIRouter(prefix="/search", tags=["search"])
 
@@ -36,13 +36,22 @@ def _snippet(text: str | None, query: str, window: int = 120) -> str | None:
 @router.get("", response_model=SearchResponse)
 def search(
     db: Annotated[Session, Depends(get_db)],
-    _user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_current_user)],
     q: str = Query(..., min_length=1),
     type: str = Query("text", pattern="^(text|semantic)$"),
     limit: int = Query(20, ge=1, le=100),
 ) -> SearchResponse:
     if not q.strip():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Query cannot be empty")
+
+    # Log the search activity
+    activity = UserActivity(
+        user_id=current_user.id,
+        action="search",
+        detail=q.strip(),
+    )
+    db.add(activity)
+    db.commit()
 
     pattern = f"%{q}%"
 
@@ -65,7 +74,6 @@ def search(
 
     results = []
     for article, processed in query:
-        # Build match snippet from whichever field matched
         snippet = None
         for text in [processed.tldr, article.clean_text, article.title]:
             if text and q.lower() in text.lower():

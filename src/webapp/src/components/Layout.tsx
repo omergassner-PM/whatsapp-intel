@@ -8,6 +8,7 @@ import {
   LogOut,
   Menu,
   X,
+  Shield,
 } from "lucide-react";
 import { clearAuth, getStoredUser, isAdmin } from "../auth";
 
@@ -79,14 +80,24 @@ export default function Layout() {
             </NavLink>
           ))}
           {isAdmin() && (
-            <NavLink
-              to="/upload"
-              className={navLinkClass}
-              onClick={closeSidebar}
-            >
-              <Upload size={18} />
-              Upload
-            </NavLink>
+            <>
+              <NavLink
+                to="/upload"
+                className={navLinkClass}
+                onClick={closeSidebar}
+              >
+                <Upload size={18} />
+                Upload
+              </NavLink>
+              <NavLink
+                to="/admin"
+                className={navLinkClass}
+                onClick={closeSidebar}
+              >
+                <Shield size={18} />
+                Admin
+              </NavLink>
+            </>
           )}
         </nav>
 

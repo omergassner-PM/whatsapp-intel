@@ -129,7 +129,8 @@ class User(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     username = Column(String(100), nullable=False, unique=True, index=True)
-    password_hash = Column(String(255), nullable=False)
+    email = Column(String(255), nullable=True, index=True)
+    password_hash = Column(String(255), nullable=True)  # nullable for viewers (name+email only)
     display_name = Column(String(255), nullable=True)
     role = Column(String(20), default="viewer")  # admin | viewer
     is_active = Column(Boolean, default=True)
@@ -184,6 +185,24 @@ class IngestionLog(Base):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
     completed_at = Column(DateTime(timezone=True), nullable=True)
+
+
+class UserActivity(Base):
+    """Tracks user actions: searches, downloads, page views."""
+
+    __tablename__ = "user_activities"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    action = Column(String(50), nullable=False, index=True)  # search|download|view
+    detail = Column(Text, nullable=True)  # search query, download filename, article title
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+    user = relationship("User", backref="activities")
 
 
 # Database setup helper

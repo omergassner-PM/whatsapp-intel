@@ -7,6 +7,7 @@ import ArticlesPage from "./pages/ArticlesPage";
 import ArticleDetailPage from "./pages/ArticleDetailPage";
 import SearchPage from "./pages/SearchPage";
 import UploadPage from "./pages/UploadPage";
+import AdminPage from "./pages/AdminPage";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!isLoggedIn()) return <Navigate to="/login" replace />;
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="articles/:id" element={<ArticleDetailPage />} />
         <Route path="search" element={<SearchPage />} />
         <Route path="upload" element={<UploadPage />} />
+        <Route path="admin" element={<AdminPage />} />
       </Route>
     </Routes>
   );
