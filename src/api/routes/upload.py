@@ -13,8 +13,8 @@ from typing import Annotated
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
-from src.api.auth import require_admin
-from src.api.database import SessionLocal
+from src.api.auth import get_current_user, require_admin
+from src.api.database import SessionLocal, get_db
 from src.api.schemas import UploadResponse
 from src.database.models import Article, IngestionLog, ProcessedItem, RawMessage, User
 from src.ingestion.parser import extract_export_from_zip, parse_chat_file
@@ -138,6 +138,7 @@ def _run_ingestion(export_path: Path, log_id: uuid.UUID) -> None:
                         action_items=result.get("action_items", []),
                         tags=result.get("tags", []),
                         relevance_score=result.get("relevance_score", 3),
+                        language=result.get("language", "en"),
                     )
                     db.add(item)
                     processed_count += 1
@@ -223,3 +224,27 @@ async def upload_export(
         skipped_duplicates=skipped,
         urls_found=urls_found,
     )
+
+
+@router.get("/upload/status/{job_id}")
+def get_job_status(
+    job_id: uuid.UUID,
+    db: Annotated[Session, Depends(get_db)],
+    _user: Annotated[User, Depends(require_admin)],
+) -> dict:
+    """Check the processing status of an upload job."""
+    log = db.query(IngestionLog).filter(IngestionLog.id == job_id).first()
+    if not log:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return {
+        "id": str(log.id),
+        "status": log.status,
+        "export_filename": log.export_filename,
+        "total_messages": log.total_messages,
+        "new_messages": log.new_messages,
+        "articles_scraped": log.articles_scraped,
+        "articles_processed": log.articles_processed,
+        "error_message": log.error_message,
+        "started_at": log.started_at.isoformat() if log.started_at else None,
+        "completed_at": log.completed_at.isoformat() if log.completed_at else None,
+    }

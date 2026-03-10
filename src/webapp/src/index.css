@@ -1,3 +1,93 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Intelligence news site typography */
+@layer base {
+  body {
+    @apply antialiased;
+    font-feature-settings: "kern" 1, "liga" 1;
+  }
+}
+
+/* RTL support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] .flex {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]) {
+  margin-right: 0.5rem;
+  margin-left: 0;
+}
+
+/* Article text direction */
+.text-rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+.text-ltr {
+  direction: ltr;
+  text-align: left;
+}
+
+/* News card styles */
+.news-card {
+  @apply bg-white rounded-lg border border-gray-200 transition-all duration-200;
+}
+
+.news-card:hover {
+  @apply shadow-md border-gray-300;
+  transform: translateY(-1px);
+}
+
+/* Score indicators */
+.score-critical {
+  @apply bg-red-600 text-white;
+}
+.score-high {
+  @apply bg-orange-500 text-white;
+}
+.score-medium {
+  @apply bg-yellow-500 text-white;
+}
+.score-low {
+  @apply bg-gray-400 text-white;
+}
+
+/* Tag cloud */
+.tag-pill {
+  @apply inline-block text-xs font-medium px-2.5 py-1 rounded-full transition-colors cursor-pointer;
+}
+.tag-pill:hover {
+  @apply ring-2 ring-offset-1;
+}
+
+/* Processing pulse */
+@keyframes pulse-dot {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+.processing-dot {
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+.processing-dot:nth-child(2) { animation-delay: 0.2s; }
+.processing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}

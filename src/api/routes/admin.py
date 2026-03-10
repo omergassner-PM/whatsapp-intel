@@ -37,6 +37,49 @@ from src.database.models import (
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
+# --- Stats ---
+
+@router.get("/stats")
+def get_stats(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> dict:
+    """Dashboard stats — available to all logged-in users."""
+    total_articles = db.query(func.count(Article.id)).filter(Article.scrape_status == "success").scalar() or 0
+    total_messages = db.query(func.count(RawMessage.id)).scalar() or 0
+    total_urls = db.query(func.count(Article.id)).scalar() or 0
+    total_processed = db.query(func.count(ProcessedItem.id)).scalar() or 0
+    pending_processing = total_articles - total_processed
+
+    # Tag breakdown
+    tag_col = func.unnest(ProcessedItem.tags).label("tag")
+    tag_rows = (
+        db.query(tag_col, func.count().label("cnt"))
+        .group_by("tag")
+        .order_by(func.count().desc())
+        .limit(20)
+        .all()
+    )
+    top_tags = [{"name": r.tag, "count": r.cnt} for r in tag_rows]
+
+    # Recent activity count
+    from datetime import timedelta
+    week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    articles_this_week = db.query(func.count(Article.id)).filter(
+        Article.created_at >= week_ago, Article.scrape_status == "success"
+    ).scalar() or 0
+
+    return {
+        "total_articles": total_articles,
+        "total_messages": total_messages,
+        "total_urls": total_urls,
+        "total_processed": total_processed,
+        "pending_processing": pending_processing,
+        "articles_this_week": articles_this_week,
+        "top_tags": top_tags,
+    }
+
+
 # --- Users ---
 
 @router.get("/users", response_model=list[AdminUserOut])

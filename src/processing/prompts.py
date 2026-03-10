@@ -43,7 +43,8 @@ Respond with this exact JSON structure:
     "Any recommendations, warnings, or action-worthy takeaways"
   ],
   "tags": ["tag1", "tag2"],
-  "relevance_score": 3
+  "relevance_score": 3,
+  "language": "en"
 }}
 
 Rules:
@@ -51,6 +52,7 @@ Rules:
 - key_facts should be 3-7 concrete, verifiable facts
 - Only include people/orgs/tech that are actually in the article
 - tags should be lowercase, general categories (e.g., "defense", "cyber", "geopolitics", "technology", "policy", "industry", "finance")
+- language: ISO 639-1 code for the article's primary language (e.g., "en", "he", "ar", "ru", "fr")
 - relevance_score: 1=low general interest, 3=moderately relevant, 5=critical/urgent
 - If a field has no data, use an empty array []
 - Respond ONLY with the JSON object, nothing else

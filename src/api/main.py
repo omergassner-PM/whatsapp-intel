@@ -25,7 +25,7 @@ logging.basicConfig(
 app = FastAPI(
     title="AeroData",
     description="AeroDan Ltd — Intelligence Platform",
-    version="1.0.0",
+    version="0.1.0",
 )
 
 # CORS
@@ -80,6 +80,13 @@ def _apply_schema_migrations() -> None:
 
             # Make password_hash nullable (for viewer self-registration)
             conn.execute(text("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL"))
+
+        # Check if processed_items table needs language column
+        if "processed_items" in inspector.get_table_names():
+            pi_columns = {col["name"] for col in inspector.get_columns("processed_items")}
+            if "language" not in pi_columns:
+                logger.info("Adding 'language' column to processed_items table")
+                conn.execute(text("ALTER TABLE processed_items ADD COLUMN language VARCHAR(10)"))
 
         conn.commit()
 

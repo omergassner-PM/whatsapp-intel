@@ -50,6 +50,7 @@ class ArticleListItem(BaseModel):
     relevance_score: int | None = None
     shared_by: str | None = None
     shared_at: datetime | None = None
+    language: str | None = None
 
 
 class PaginatedArticles(BaseModel):
@@ -77,6 +78,7 @@ class ArticleDetail(BaseModel):
     shared_by: str | None = None
     shared_at: datetime | None = None
     processed_at: datetime | None = None
+    language: str | None = None
 
 
 # --- Weekly Digests ---

@@ -95,6 +95,7 @@ class ProcessedItem(Base):
     action_items = Column(JSONB, default=[])
     tags = Column(ARRAY(String), default=[])
     relevance_score = Column(Integer, default=3)
+    language = Column(String(10), nullable=True)  # en, he, ar, etc.
     # embedding = Column(Vector(1536), nullable=True)  # Uncomment when pgvector is set up
     processed_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)

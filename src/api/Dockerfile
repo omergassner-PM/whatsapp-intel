@@ -6,6 +6,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
+    tesseract-ocr \
+    tesseract-ocr-heb \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies

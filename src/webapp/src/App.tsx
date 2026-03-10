@@ -8,6 +8,7 @@ import ArticleDetailPage from "./pages/ArticleDetailPage";
 import SearchPage from "./pages/SearchPage";
 import UploadPage from "./pages/UploadPage";
 import AdminPage from "./pages/AdminPage";
+import TagsPage from "./pages/TagsPage";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!isLoggedIn()) return <Navigate to="/login" replace />;
@@ -29,6 +30,7 @@ export default function App() {
         <Route index element={<DashboardPage />} />
         <Route path="articles" element={<ArticlesPage />} />
         <Route path="articles/:id" element={<ArticleDetailPage />} />
+        <Route path="tags" element={<TagsPage />} />
         <Route path="search" element={<SearchPage />} />
         <Route path="upload" element={<UploadPage />} />
         <Route path="admin" element={<AdminPage />} />

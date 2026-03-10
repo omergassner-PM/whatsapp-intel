@@ -89,6 +89,7 @@ def list_articles(
                 relevance_score=processed.relevance_score if processed else None,
                 shared_by=message.sender if message else None,
                 shared_at=message.timestamp if message else None,
+                language=processed.language if processed else None,
             )
         )
 
@@ -130,4 +131,5 @@ def get_article(
         shared_by=message.sender if message else None,
         shared_at=message.timestamp if message else None,
         processed_at=processed.processed_at if processed else None,
+        language=processed.language if processed else None,
     )
