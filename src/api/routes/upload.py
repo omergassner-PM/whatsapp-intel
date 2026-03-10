@@ -182,7 +182,9 @@ async def upload_export(
     try:
         with tempfile.TemporaryDirectory() as tmpdir:
             chat_file, _ = extract_export_from_zip(export_path, tmpdir)
+            logger.info("Parsing chat file: %s (size: %d bytes)", chat_file.name, chat_file.stat().st_size)
             messages = parse_chat_file(chat_file)
+            logger.info("Parsed %d messages from export", len(messages))
 
         db = SessionLocal()
         try:
