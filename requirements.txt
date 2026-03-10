@@ -18,7 +18,7 @@ trafilatura==2.0.*
 
 # Auth
 python-jose[cryptography]==3.3.*
-passlib[bcrypt]==1.7.*
+bcrypt==4.0.1
 
 # Utilities
 python-dotenv==1.0.*

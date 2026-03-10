@@ -30,8 +30,6 @@ export default api;
 export const login = (username: string, password: string) =>
   api.post("/auth/login", { username, password });
 
-export const devLogin = () => api.post("/auth/dev-login");
-
 // --- Articles ---
 export const getArticles = (params: Record<string, string | number>) =>
   api.get("/articles", { params });

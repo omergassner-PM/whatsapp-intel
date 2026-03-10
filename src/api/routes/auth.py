@@ -1,5 +1,5 @@
 """
-Authentication routes — login, viewer registration, dev login.
+Authentication routes — login and viewer registration.
 """
 
 import logging
@@ -17,41 +17,32 @@ from src.database.models import User
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-DEV_USERNAME = "admin"
-DEV_DISPLAY = "Admin"
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "Admin1812"
+ADMIN_DISPLAY = "Admin"
 
 
-def _ensure_dev_user(db: Session) -> User:
-    """Create or fetch the dev admin user (admin/admin)."""
-    user = db.query(User).filter(User.username == DEV_USERNAME).first()
+def _ensure_admin_user(db: Session) -> None:
+    """Create the admin user on first run if it doesn't exist."""
+    user = db.query(User).filter(User.username == ADMIN_USERNAME).first()
     if not user:
         user = User(
-            username=DEV_USERNAME,
-            password_hash=hash_password("admin"),
-            display_name=DEV_DISPLAY,
+            username=ADMIN_USERNAME,
+            password_hash=hash_password(ADMIN_PASSWORD),
+            display_name=ADMIN_DISPLAY,
             role="admin",
             is_active=True,
         )
         db.add(user)
         db.commit()
-        db.refresh(user)
-        logger.info("Created dev admin user '%s'", DEV_USERNAME)
-    return user
-
-
-@router.post("/dev-login", response_model=LoginResponse)
-def dev_login(db: Annotated[Session, Depends(get_db)]) -> LoginResponse:
-    """Auto-login as admin — for development/testing only."""
-    user = _ensure_dev_user(db)
-    token = create_access_token(user.id, user.role)
-    return LoginResponse(
-        access_token=token,
-        user=UserOut.model_validate(user),
-    )
+        logger.info("Created admin user '%s'", ADMIN_USERNAME)
 
 
 @router.post("/login", response_model=LoginResponse)
 def login(body: LoginRequest, db: Annotated[Session, Depends(get_db)]) -> LoginResponse:
+    # Ensure admin exists on first login attempt
+    _ensure_admin_user(db)
+
     user = db.query(User).filter(User.username == body.username).first()
     if not user or not user.password_hash or not verify_password(body.password, user.password_hash):
         raise HTTPException(
